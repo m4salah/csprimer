@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::{env, os::fd::AsRawFd, str::FromStr};
 
 use byteorder::{BigEndian, WriteBytesExt};
@@ -16,7 +17,7 @@ struct DNSHeader {
 }
 
 impl DNSHeader {
-    pub fn as_bytes(&self) -> Vec<u8> {
+    pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::with_capacity(2 * 6);
         bytes.write_u16::<BigEndian>(self.id).unwrap();
         bytes.write_u16::<BigEndian>(self.flags).unwrap();
@@ -25,6 +26,17 @@ impl DNSHeader {
         bytes.write_u16::<BigEndian>(self.authority_count).unwrap();
         bytes.write_u16::<BigEndian>(self.additional_count).unwrap();
         return bytes;
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        Self {
+            id: u16::from_be_bytes(bytes[0..2].try_into().unwrap()),
+            flags: u16::from_be_bytes(bytes[2..4].try_into().unwrap()),
+            question_count: u16::from_be_bytes(bytes[4..6].try_into().unwrap()),
+            answer_count: u16::from_be_bytes(bytes[6..8].try_into().unwrap()),
+            authority_count: u16::from_be_bytes(bytes[8..10].try_into().unwrap()),
+            additional_count: u16::from_be_bytes(bytes[10..12].try_into().unwrap()),
+        }
     }
 }
 
@@ -43,23 +55,99 @@ impl DNSQuestion {
             name.extend_from_slice(part.as_bytes());
         }
         name.push(0); // Null terminator for the QNAME
-        println!("name is: {name:02X?}");
 
-        DNSQuestion {
+        Self {
             name,
             qtype,
             qclass,
         }
     }
 
-    pub fn as_bytes(&self) -> Vec<u8> {
-        let mut bytes = Vec::with_capacity(self.name.len() + 4);
-        for byte in self.name.clone() {
-            bytes.write_u8(byte).unwrap();
-        }
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut bytes = self.name.clone();
         bytes.write_u16::<BigEndian>(self.qtype).unwrap();
         bytes.write_u16::<BigEndian>(self.qclass).unwrap();
         return bytes;
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        let end_of_name_index = bytes.iter().position(|b| *b == 0).unwrap() + 1;
+
+        Self {
+            name: Vec::from(&bytes[..end_of_name_index]),
+            qtype: u16::from_be_bytes(
+                bytes[end_of_name_index..end_of_name_index + 2]
+                    .try_into()
+                    .unwrap(),
+            ),
+            qclass: u16::from_be_bytes(
+                bytes[end_of_name_index + 2..end_of_name_index + 2 + 2]
+                    .try_into()
+                    .unwrap(),
+            ),
+        }
+    }
+}
+
+#[derive(Debug)]
+struct DNSAnswer {
+    pub name: Vec<u8>,
+    pub atype: u16,
+    pub qclass: u16,
+    pub ttl: u32,
+    pub rd_length: u16,
+    pub rd_data: Vec<u8>,
+}
+
+#[derive(Debug)]
+struct DNS {
+    header: DNSHeader,
+    question: DNSQuestion,
+    answer: DNSAnswer,
+}
+
+impl DNS {
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        let header = DNSHeader::from_bytes(&bytes[..12]);
+        let question = DNSQuestion::from_bytes(&bytes[12..]);
+        let answer = DNSAnswer::from_bytes(&bytes[(question.name.len() + 4 + 12)..]);
+
+        Self {
+            header,
+            question,
+            answer,
+        }
+    }
+}
+
+impl DNSAnswer {
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        let end_of_name_index = bytes.iter().position(|b| *b & 0b11000000 > 0).unwrap() + 2;
+
+        Self {
+            name: Vec::from(&bytes[..end_of_name_index]),
+            atype: u16::from_be_bytes(
+                bytes[end_of_name_index..end_of_name_index + 2]
+                    .try_into()
+                    .unwrap(),
+            ),
+            qclass: u16::from_be_bytes(
+                bytes[end_of_name_index + 2..end_of_name_index + 2 + 2]
+                    .try_into()
+                    .unwrap(),
+            ),
+            ttl: u32::from_be_bytes(
+                bytes[end_of_name_index + 2 + 2..end_of_name_index + 2 + 2 + 4]
+                    .try_into()
+                    .unwrap(),
+            ),
+            rd_length: u16::from_be_bytes(
+                bytes[end_of_name_index + 2 + 2 + 4..end_of_name_index + 2 + 2 + 4 + 2]
+                    .try_into()
+                    .unwrap(),
+            ),
+            rd_data: Vec::from(&bytes[end_of_name_index + 2 + 2 + 4 + 2..]),
+        }
     }
 }
 
@@ -68,7 +156,7 @@ fn main() {
         .skip(1)
         .next()
         .expect("Pass the hostname as argument");
-    println!("querying {hostname}");
+    println!("querying... {hostname}");
 
     let socket_fd = socket(
         AddressFamily::Inet,
@@ -88,14 +176,10 @@ fn main() {
     };
     let question = DNSQuestion::new(&hostname, 1, 1);
 
-    let header = header.as_bytes();
-
-    let question = question.as_bytes();
-
     // Combine header and question into one message
     let mut message = Vec::new();
-    message.extend_from_slice(&header);
-    message.extend_from_slice(&question);
+    message.extend_from_slice(&header.to_bytes());
+    message.extend_from_slice(&question.to_bytes());
 
     let cloudflare_dns = SockaddrIn::from_str("1.1.1.1:53").unwrap();
 
@@ -108,9 +192,29 @@ fn main() {
     .expect("Failed to sendto");
 
     let mut answer_buf = [0; 1024];
-    if let Ok((bytes, Some(addr))) = recvfrom::<SockaddrIn>(socket_fd.as_raw_fd(), &mut answer_buf)
+    if let Ok((bytes, Some(_addr))) = recvfrom::<SockaddrIn>(socket_fd.as_raw_fd(), &mut answer_buf)
     {
         // TODO: return the to user the dns record, or do something with it.
-        println!("Received form {addr} {bytes} bytes");
+        let dns = DNS::from_bytes(&answer_buf[..bytes]);
+        assert!(dns.header.id == header.id, "ids not matched");
+        assert!(dns.header.question_count == 1, "invalid question count");
+        assert!(dns.header.answer_count == 1, "invalid answer count");
+        assert!(dns.header.authority_count == 0, "invalid authority count");
+        assert!(dns.header.additional_count == 0, "invalid additional count");
+
+        assert!(dns.question.name == question.name, "names not matched");
+        assert!(dns.question.qclass == question.qclass, "qclass not matched");
+        assert!(dns.question.qtype == question.qtype, "qtype not matched");
+
+        println!(
+            "{} is on IP: {}",
+            hostname,
+            dns.answer
+                .rd_data
+                .iter()
+                .map(|n| n.to_string())
+                .collect::<Vec<_>>()
+                .join(".")
+        );
     }
 }
