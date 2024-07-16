@@ -167,7 +167,7 @@ fn main() {
     .expect("Failed to open socket file descriptor");
 
     let header = DNSHeader {
-        id: 42,
+        id: rand::random(),
         flags: 0x0100,
         question_count: 1,
         answer_count: 0,
@@ -192,19 +192,20 @@ fn main() {
     .expect("Failed to sendto");
 
     let mut answer_buf = [0; 1024];
-    if let Ok((bytes, Some(_addr))) = recvfrom::<SockaddrIn>(socket_fd.as_raw_fd(), &mut answer_buf)
-    {
-        // TODO: return the to user the dns record, or do something with it.
-        let dns = DNS::from_bytes(&answer_buf[..bytes]);
-        assert!(dns.header.id == header.id, "ids not matched");
-        assert!(dns.header.question_count == 1, "invalid question count");
-        assert!(dns.header.answer_count == 1, "invalid answer count");
-        assert!(dns.header.authority_count == 0, "invalid authority count");
-        assert!(dns.header.additional_count == 0, "invalid additional count");
 
-        assert!(dns.question.name == question.name, "names not matched");
-        assert!(dns.question.qclass == question.qclass, "qclass not matched");
-        assert!(dns.question.qtype == question.qtype, "qtype not matched");
+    while let Ok((bytes, Some(addr))) =
+        recvfrom::<SockaddrIn>(socket_fd.as_raw_fd(), &mut answer_buf)
+    {
+        // validate the receiver address
+        if addr != cloudflare_dns {
+            continue;
+        }
+        let dns = DNS::from_bytes(&answer_buf[..bytes]);
+
+        // validate it's the same id we sent
+        if dns.header.id != header.id {
+            continue;
+        }
 
         println!(
             "{} is on IP: {}",
@@ -216,5 +217,6 @@ fn main() {
                 .collect::<Vec<_>>()
                 .join(".")
         );
+        break;
     }
 }

@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 byteorder = "1.5.0"
 nix = { version = "0.29.0", features = ["net", "socket"] }
+rand = "0.8.5"
