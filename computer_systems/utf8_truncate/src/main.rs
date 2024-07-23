@@ -39,7 +39,7 @@ fn utf8_truncate(n: u8, buf: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
             res.push(buf[i + 2]);
             i += 3;
         } else if buf[i] & 0b11000000 == 0b11000000 {
-            // four bytes utf-8 character
+            // two bytes utf-8 character
             if i + 2 > n {
                 break;
             }
