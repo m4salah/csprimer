@@ -4,6 +4,8 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+/// function truncate string on n characters
+/// taking in considiration the utf8 characters
 fn utf8_truncate(n: u8, buf: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
     let n = n as usize;
     let mut res = Vec::new();
