@@ -40,7 +40,7 @@ fn conceal(b: &[u8]) -> f64 {
 
 fn extract(f: f64) -> String {
     // Get the length of the message.
-    // Which is the third half byte.
+    // Which is the fourth half byte.
     let n = f.to_be_bytes()[1] & 0x0f;
 
     // the end of the message is equal to the length of the message
@@ -53,7 +53,7 @@ fn extract(f: f64) -> String {
 
 #[test]
 fn test_conceal_extract() {
-    let cases = vec!["hello!", "woo", "hello"];
+    let cases = vec!["hello!", "woo", "hello", "❤️"];
     for case in cases {
         assert_eq!(extract(conceal(case.as_bytes())), case, "Failed at {case}");
     }
@@ -61,6 +61,11 @@ fn test_conceal_extract() {
 
 fn main() {
     let concealed = conceal("hello!".as_bytes());
+    println!("Concealed: {concealed}");
+    let extracted = extract(concealed);
+    println!("Extracted: {}", extracted);
+
+    let concealed = conceal("❤️".as_bytes());
     println!("Concealed: {concealed}");
     let extracted = extract(concealed);
     println!("Extracted: {}", extracted);
