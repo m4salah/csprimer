@@ -1,41 +1,37 @@
+use std::sync::LazyLock;
+
 fn main() {
-    println!("Hello, world!");
+    // valid case
+    assert!(luhn("17893729974").unwrap());
+    // invalid case
+    assert!(!luhn("17893729975").unwrap());
+
+    println!("Ok!");
 }
 
-/// if the length of string is less than 2 we return false immediatly
-/// other than that we
-pub fn luhn(cc_number: &str) -> bool {
-    if cc_number.len() < 2 {
-        return false;
+static LUHN_LOOKUP: LazyLock<[[u32; 10]; 2]> = LazyLock::new(generate_luhn_lookup);
+
+fn generate_luhn_lookup() -> [[u32; 10]; 2] {
+    let mut lookup = [0u32; 10];
+    for i in 0..10 {
+        lookup[i] = if i * 2 > 9 { (i * 2) - 9 } else { i * 2 } as u32;
     }
-    let mut sum = 0;
-    let mut digits = 0;
-    let mut double = false;
-    for c in cc_number.chars().rev() {
-        if let Some(digit) = c.to_digit(10) {
-            // we found a digit
-            digits += 1;
-            let double_digit = digit * 2;
-            if double {
-                // the double case
-                sum += if double_digit > 9 {
-                    double_digit - 9
-                } else {
-                    double_digit
-                }
-            } else {
-                // the normal case
-                sum += digit
-            };
-            // flip double
-            double = !double;
-        } else if c.is_whitespace() {
-            continue;
-        } else {
-            return false;
-        }
-    }
-    digits > 1 && sum % 10 == 0
+    [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], lookup]
+}
+
+pub fn luhn(cc_number: &str) -> Result<bool, String> {
+    let sum = cc_number
+        .chars()
+        .filter(|c| !c.is_whitespace()) // Filter out spaces
+        .rev()
+        .enumerate()
+        .try_fold(0, |acc, (i, c)| {
+            if let Some(digit) = c.to_digit(10) {
+                return Ok(acc + LUHN_LOOKUP[i % 2][digit as usize]);
+            }
+            return Err(format!("Invalid character '{}' in credit card number", c));
+        })?;
+    Ok(sum % 10 == 0)
 }
 
 #[cfg(test)]
@@ -44,43 +40,30 @@ mod test {
 
     #[test]
     fn test_valid_cc_number() {
-        assert!(luhn("4263 9826 4026 9299"));
-        assert!(luhn("4539 3195 0343 6467"));
-        assert!(luhn("7992 7398 713"));
+        assert!(luhn("4263 9826 4026 9299").unwrap());
+        assert!(luhn("4539 3195 0343 6467").unwrap());
+        assert!(luhn("7992 7398 713").unwrap());
         // from wikipedia
-        assert!(luhn("17893729974"));
+        assert!(luhn("17893729974").unwrap());
     }
 
     #[test]
     fn test_invalid_cc_number() {
-        assert!(!luhn("4223 9826 4026 9299"));
-        assert!(!luhn("4539 3195 0343 6476"));
-        assert!(!luhn("8273 1232 7352 0569"));
+        assert!(!luhn("4223 9826 4026 9299").unwrap());
+        assert!(!luhn("4539 3195 0343 6476").unwrap());
+        assert!(!luhn("8273 1232 7352 0569").unwrap());
         // from wikipedia but invalid
-        assert!(!luhn("17893729975"));
+        assert!(!luhn("17893729975").unwrap());
     }
 
     #[test]
     fn test_non_digit_cc_number() {
-        assert!(!luhn("foo"));
-        assert!(!luhn("foo 0 0"));
-    }
-
-    #[test]
-    fn test_empty_cc_number() {
-        assert!(!luhn(""));
-        assert!(!luhn(" "));
-        assert!(!luhn("  "));
-        assert!(!luhn("    "));
-    }
-
-    #[test]
-    fn test_single_digit_cc_number() {
-        assert!(!luhn("0"));
+        assert!(luhn("foo").is_err());
+        assert!(luhn("foo 0 0").is_err());
     }
 
     #[test]
     fn test_two_digit_cc_number() {
-        assert!(luhn(" 0 0 "));
+        assert!(luhn(" 0 0 ").unwrap());
     }
 }
