@@ -22,7 +22,6 @@ fn generate_luhn_lookup() -> [[u32; 10]; 2] {
 pub fn luhn(cc_number: &str) -> Result<bool, String> {
     let sum = cc_number
         .chars()
-        .filter(|c| !c.is_whitespace()) // Filter out spaces
         .rev()
         .enumerate()
         .try_fold(0, |acc, (i, c)| {
@@ -40,18 +39,18 @@ mod test {
 
     #[test]
     fn test_valid_cc_number() {
-        assert!(luhn("4263 9826 4026 9299").unwrap());
-        assert!(luhn("4539 3195 0343 6467").unwrap());
-        assert!(luhn("7992 7398 713").unwrap());
+        assert!(luhn("4263982640269299").unwrap());
+        assert!(luhn("4539319503436467").unwrap());
+        assert!(luhn("79927398713").unwrap());
         // from wikipedia
         assert!(luhn("17893729974").unwrap());
     }
 
     #[test]
     fn test_invalid_cc_number() {
-        assert!(!luhn("4223 9826 4026 9299").unwrap());
-        assert!(!luhn("4539 3195 0343 6476").unwrap());
-        assert!(!luhn("8273 1232 7352 0569").unwrap());
+        assert!(!luhn("4223982640269299").unwrap());
+        assert!(!luhn("4539319503436476").unwrap());
+        assert!(!luhn("8273123273520569").unwrap());
         // from wikipedia but invalid
         assert!(!luhn("17893729975").unwrap());
     }
@@ -64,6 +63,6 @@ mod test {
 
     #[test]
     fn test_two_digit_cc_number() {
-        assert!(luhn(" 0 0 ").unwrap());
+        assert!(luhn(" 0 0 ").is_err());
     }
 }
