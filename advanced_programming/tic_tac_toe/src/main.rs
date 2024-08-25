@@ -38,20 +38,17 @@ use std::io::{self, BufRead};
 //
 fn main() {
     let mut board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-    let mut user1inputes = Vec::new();
-    let mut user2inputes = Vec::new();
+    let mut x = Vec::new();
+    let mut o = Vec::new();
     loop {
         print_board(&board);
-        print!("Valid Number: ");
-        let valid = valid_inputs(&user1inputes, &user2inputes);
+        let valid = valid_inputs(&x, &o);
+        if valid.is_empty() {
+            println!("It's a tie!");
+            break;
+        }
 
-        // print the valid inputs for the user.
-        valid.iter().for_each(|ele| {
-            print!("{ele}, ");
-        });
-
-        println!();
-        println!("User 1: Enter one of valid numbers: ");
+        println!("User X: Enter one of numbers on board: ");
         let stdin = io::stdin();
         let mut iterator = stdin.lock().lines();
         let Some(Ok(input)) = iterator.next() else {
@@ -66,24 +63,21 @@ fn main() {
             println!("Please enter valid input from the valid numbers");
             continue;
         }
-        user1inputes.push(n);
+        x.push(n);
         board[n as usize - 1] = 1;
-        if is_winner(&user1inputes) {
+        if is_winner(&x) {
             print_board(&board);
             println!("User 1 won! yay!");
             break;
         }
         print_board(&board);
-        print!("Valid Number: ");
-        let valid = valid_inputs(&user1inputes, &user2inputes);
+        let valid = valid_inputs(&x, &o);
+        if valid.is_empty() {
+            println!("It's a tie!");
+            break;
+        }
 
-        // print the valid inputs for the user.
-        valid.iter().for_each(|ele| {
-            print!("{ele}, ");
-        });
-
-        println!();
-        println!("User 2: Enter one of valid numbers: ");
+        println!("User O: Enter one of numbers on board: ");
         let Some(Ok(input)) = iterator.next() else {
             println!("Invalid input. Please try again.");
             continue;
@@ -96,9 +90,9 @@ fn main() {
             println!("Please enter valid input from the valid numbers");
             continue;
         }
-        user2inputes.push(n);
+        o.push(n);
         board[n as usize - 1] = 2;
-        if is_winner(&user2inputes) {
+        if is_winner(&o) {
             print_board(&board);
             println!("User 2 won! yay!");
             break;
@@ -210,7 +204,7 @@ fn print_board(board: &[u8]) {
         } else if elem == &2 {
             print!(" O |");
         } else {
-            print!("   |");
+            print!(" {} |", i + 1);
         }
     }
     println!();
