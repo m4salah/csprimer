@@ -163,11 +163,11 @@ fn is_winner(user_inputes: &[u8]) -> bool {
     //      board[1] == board[4] == board[7]
     //      board[2] == board[5] == board[8]
 
-    let top_vertical_win = [1, 4, 7];
+    let left_vertical_win = [1, 4, 7];
     let mid_vertical_win = [2, 5, 8];
-    let bottom_vertical_win = [3, 6, 9];
+    let right_vertical_win = [3, 6, 9];
 
-    if top_vertical_win
+    if left_vertical_win
         .into_iter()
         .all(|x| user_inputes.contains(&x))
     {
@@ -181,7 +181,7 @@ fn is_winner(user_inputes: &[u8]) -> bool {
         return true;
     };
 
-    if bottom_vertical_win
+    if right_vertical_win
         .into_iter()
         .all(|x| user_inputes.contains(&x))
     {
