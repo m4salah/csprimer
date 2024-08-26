@@ -48,53 +48,62 @@ fn main() {
             break;
         }
 
-        println!("User X: Enter one of numbers on board: ");
         let stdin = io::stdin();
         let mut iterator = stdin.lock().lines();
-        let Some(Ok(input)) = iterator.next() else {
-            println!("Invalid input. Please try again.");
-            continue;
+        let x_input = loop {
+            println!("User X: Enter one of numbers on board: ");
+            let Some(Ok(input)) = iterator.next() else {
+                println!("Invalid input. Please try again.");
+                continue;
+            };
+            let Ok(n) = input.parse::<u8>() else {
+                println!("Invalid input. Please try again.");
+                continue;
+            };
+            if !valid.contains(&n) {
+                println!("Please enter valid input from the valid numbers");
+                continue;
+            };
+            break n;
         };
-        let Ok(n) = input.parse::<u8>() else {
-            println!("Invalid input. Please try again.");
-            continue;
-        };
-        if !valid.contains(&n) {
-            println!("Please enter valid input from the valid numbers");
-            continue;
-        }
-        x.push(n);
-        board[n as usize - 1] = 1;
+        x.push(x_input);
+
+        board[x_input as usize - 1] = 1;
         if is_winner(&x) {
             print_board(&board);
-            println!("User 1 won! yay!");
+            println!("User X won! yay!");
             break;
         }
         print_board(&board);
+
         let valid = valid_inputs(&x, &o);
         if valid.is_empty() {
             println!("It's a tie!");
             break;
         }
 
-        println!("User O: Enter one of numbers on board: ");
-        let Some(Ok(input)) = iterator.next() else {
-            println!("Invalid input. Please try again.");
-            continue;
+        let o_input = loop {
+            println!("User O: Enter one of numbers on board: ");
+            let Some(Ok(input)) = iterator.next() else {
+                println!("Invalid input. Please try again.");
+                continue;
+            };
+            let Ok(n) = input.parse::<u8>() else {
+                println!("Invalid input. Please try again.");
+                continue;
+            };
+            if !valid.contains(&n) {
+                println!("Please enter valid input from the valid numbers");
+                continue;
+            };
+            break n;
         };
-        let Ok(n) = input.parse::<u8>() else {
-            println!("Invalid input. Please try again.");
-            continue;
-        };
-        if !valid.contains(&n) {
-            println!("Please enter valid input from the valid numbers");
-            continue;
-        }
-        o.push(n);
-        board[n as usize - 1] = 2;
+        o.push(o_input);
+
+        board[o_input as usize - 1] = 2;
         if is_winner(&o) {
             print_board(&board);
-            println!("User 2 won! yay!");
+            println!("User O won! yay!");
             break;
         }
     }
