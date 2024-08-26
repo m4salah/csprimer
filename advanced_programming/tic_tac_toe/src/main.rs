@@ -202,11 +202,11 @@ fn valid_inputs(user1inputes: &[u8], user2inputes: &[u8]) -> Vec<u8> {
 
 //  Print the board
 fn print_board(board: &[u8]) {
-    println!("-------------");
+    println!("------------");
     for (i, elem) in board.iter().enumerate() {
         if i % 3 == 0 && i != 0 {
             println!();
-            println!("-------------");
+            println!("------------");
         }
         if elem == &1 {
             print!(" X |");
@@ -217,5 +217,5 @@ fn print_board(board: &[u8]) {
         }
     }
     println!();
-    println!("-------------");
+    println!("------------");
 }
