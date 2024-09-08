@@ -32,6 +32,7 @@ impl TicTacToe {
         }
     }
 
+    // TODO: How to make iterator more generic to accept any iterator?
     fn add_move(&mut self, iterator: &mut Lines<StdinLock<'static>>, player: Player) {
         let valid = self.valid_inputs();
         let input = loop {
@@ -156,6 +157,7 @@ impl TicTacToe {
     //  Print the board
     fn print_board(&self) {
         // clear the terminal
+        // https://stackoverflow.com/a/75533951
         print!("{esc}c", esc = 27 as char);
         let sep = "---+---+---";
         for (i, elem) in self.board.iter().enumerate() {
