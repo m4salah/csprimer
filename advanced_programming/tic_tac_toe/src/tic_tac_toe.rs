@@ -1,6 +1,7 @@
+use io::Result;
 use std::{
     fmt,
-    io::{self, BufRead, Lines, StdinLock},
+    io::{self, BufRead},
 };
 
 enum Player {
@@ -33,7 +34,7 @@ impl TicTacToe {
     }
 
     // TODO: How to make iterator more generic to accept any iterator?
-    fn add_move(&mut self, iterator: &mut Lines<StdinLock<'static>>, player: Player) {
+    fn add_move<T: Iterator<Item = Result<String>>>(&mut self, iterator: &mut T, player: Player) {
         let valid = self.valid_inputs();
         let input = loop {
             println!("User {player}: Enter one of numbers on board:");
