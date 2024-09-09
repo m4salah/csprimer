@@ -35,17 +35,17 @@ impl TicTacToe {
     fn add_move<T: Iterator<Item = Result<String>>>(&mut self, iterator: &mut T, player: Player) {
         let valid = self.valid_inputs();
         let input = loop {
-            println!("User {player}: Enter one of numbers on board:");
+            println!("User {player}: Enter one of numbers on the board:");
             let Some(Ok(input)) = iterator.next() else {
-                println!("Invalid input. Please try again.");
+                println!("Invalid input. Please try again:");
                 continue;
             };
             let Ok(n) = input.parse::<u8>() else {
-                println!("Invalid input. Please try again.");
+                println!("Invalid input. Please try again:");
                 continue;
             };
             if !valid.contains(&n) {
-                println!("Please enter valid input from the valid numbers");
+                println!("Please Enter one of numbers on the board:");
                 continue;
             };
             break n;
