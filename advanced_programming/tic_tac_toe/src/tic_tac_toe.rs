@@ -20,16 +20,14 @@ impl fmt::Display for Player {
 
 pub struct TicTacToe {
     board: [u8; 9],
-    x: Vec<u8>,
-    o: Vec<u8>,
+    inputs: Vec<u8>,
 }
 
 impl TicTacToe {
     pub fn new() -> Self {
         Self {
             board: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            x: Vec::new(),
-            o: Vec::new(),
+            inputs: Vec::new(),
         }
     }
 
@@ -54,11 +52,11 @@ impl TicTacToe {
         };
         match player {
             Player::X => {
-                self.x.push(input);
+                self.inputs.push(input);
                 self.board[input as usize - 1] = 1;
             }
             Player::O => {
-                self.o.push(input);
+                self.inputs.push(input);
                 self.board[input as usize - 1] = 2;
             }
         }
@@ -111,15 +109,31 @@ impl TicTacToe {
         }
     }
 
+    // Assuming that the X is the starter player.
     fn is_x_winner(&self) -> bool {
-        if Self::is_winner(&self.x) {
+        if Self::is_winner(
+            &self
+                .inputs
+                .iter()
+                .step_by(2)
+                .map(|input| *input)
+                .collect::<Vec<u8>>(),
+        ) {
             return true;
         }
         return false;
     }
 
     fn is_o_winner(&self) -> bool {
-        if Self::is_winner(&self.o) {
+        if Self::is_winner(
+            &self
+                .inputs
+                .iter()
+                .skip(1)
+                .step_by(2)
+                .map(|input| *input)
+                .collect::<Vec<u8>>(),
+        ) {
             return true;
         }
         return false;
@@ -151,7 +165,7 @@ impl TicTacToe {
         let valid = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         valid
             .into_iter()
-            .filter(|x| !self.x.contains(x) && !self.o.contains(x))
+            .filter(|x| !self.inputs.contains(x))
             .collect()
     }
 
