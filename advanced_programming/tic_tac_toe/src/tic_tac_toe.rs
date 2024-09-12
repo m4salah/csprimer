@@ -3,6 +3,8 @@ use std::{
     io::{self, BufRead, Lines, StdinLock},
 };
 
+use colored::Colorize;
+
 enum Player {
     X,
     O,
@@ -159,21 +161,21 @@ impl TicTacToe {
         // clear the terminal
         // https://stackoverflow.com/a/75533951
         print!("{esc}c", esc = 27 as char);
-        let sep = "---+---+---";
+        let sep = "---+---+---".dimmed();
         for (i, elem) in self.board.iter().enumerate() {
             if i % 3 == 0 && i != 0 {
                 println!();
                 println!("{sep}");
             }
             if elem == &1 {
-                print!(" X ");
+                print!("{}", " X ".bold().red());
             } else if elem == &2 {
-                print!(" O ");
+                print!("{}", " O ".bold().green());
             } else {
-                print!(" {} ", i + 1);
+                print!(" {} ", format!("{}", i + 1).italic().dimmed());
             }
             if (i + 1) % 3 != 0 {
-                print!("|");
+                print!("{}", "|".dimmed());
             }
         }
         println!();
