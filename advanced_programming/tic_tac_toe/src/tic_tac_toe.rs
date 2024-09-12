@@ -1,6 +1,7 @@
+use io::Result;
 use std::{
     fmt,
-    io::{self, BufRead, Lines, StdinLock},
+    io::{self, BufRead},
 };
 
 use colored::Colorize;
@@ -21,45 +22,43 @@ impl fmt::Display for Player {
 
 pub struct TicTacToe {
     board: [u8; 9],
-    x: Vec<u8>,
-    o: Vec<u8>,
+    inputs: Vec<u8>,
 }
 
 impl TicTacToe {
     pub fn new() -> Self {
         Self {
             board: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            x: Vec::new(),
-            o: Vec::new(),
+            inputs: Vec::new(),
         }
     }
 
     // TODO: How to make iterator more generic to accept any iterator?
-    fn add_move(&mut self, iterator: &mut Lines<StdinLock<'static>>, player: Player) {
+    fn add_move<T: Iterator<Item = Result<String>>>(&mut self, iterator: &mut T, player: Player) {
         let valid = self.valid_inputs();
         let input = loop {
-            println!("User {player}: Enter one of numbers on board:");
+            println!("User {player}: Enter one of numbers on the board:");
             let Some(Ok(input)) = iterator.next() else {
-                println!("Invalid input. Please try again.");
+                println!("Invalid input. Please try again:");
                 continue;
             };
             let Ok(n) = input.parse::<u8>() else {
-                println!("Invalid input. Please try again.");
+                println!("Invalid input. Please try again:");
                 continue;
             };
             if !valid.contains(&n) {
-                println!("Please enter valid input from the valid numbers");
+                println!("Please Enter one of numbers on the board:");
                 continue;
             };
             break n;
         };
         match player {
             Player::X => {
-                self.x.push(input);
+                self.inputs.push(input);
                 self.board[input as usize - 1] = 1;
             }
             Player::O => {
-                self.o.push(input);
+                self.inputs.push(input);
                 self.board[input as usize - 1] = 2;
             }
         }
@@ -112,15 +111,31 @@ impl TicTacToe {
         }
     }
 
+    // Assuming that the X is the starter player.
     fn is_x_winner(&self) -> bool {
-        if Self::is_winner(&self.x) {
+        if Self::is_winner(
+            &self
+                .inputs
+                .iter()
+                .step_by(2)
+                .map(|input| *input)
+                .collect::<Vec<u8>>(),
+        ) {
             return true;
         }
         return false;
     }
 
     fn is_o_winner(&self) -> bool {
-        if Self::is_winner(&self.o) {
+        if Self::is_winner(
+            &self
+                .inputs
+                .iter()
+                .skip(1)
+                .step_by(2)
+                .map(|input| *input)
+                .collect::<Vec<u8>>(),
+        ) {
             return true;
         }
         return false;
@@ -152,7 +167,7 @@ impl TicTacToe {
         let valid = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         valid
             .into_iter()
-            .filter(|x| !self.x.contains(x) && !self.o.contains(x))
+            .filter(|x| !self.inputs.contains(x))
             .collect()
     }
 
