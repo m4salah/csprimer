@@ -87,12 +87,12 @@ impl TicTacToe {
             self.add_move(&mut iterator, Player::X);
             if self.is_x_winner() {
                 self.print_board();
-                println!("User {} won! yay!", Player::X);
+                println!("User {} won! yay!", format!("{}", Player::X).red().bold());
                 break;
             }
             if self.check_tie() {
                 self.print_board();
-                println!("It's a tie!");
+                println!("{}", "It's a tie!".yellow().bold());
                 break;
             }
 
@@ -100,12 +100,12 @@ impl TicTacToe {
             self.add_move(&mut iterator, Player::O);
             if self.is_o_winner() {
                 self.print_board();
-                println!("User {} won! yay!", Player::O);
+                println!("User {} won! yay!", format!("{}", Player::O).green().bold());
                 break;
             }
             if self.check_tie() {
                 self.print_board();
-                println!("It's a tie!");
+                println!("{}", "It's a tie!".yellow().bold());
                 break;
             }
         }
