@@ -1,6 +1,6 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::sync::{Arc, RwLock};
 
 fn memoize<F, I, R>(func: F) -> impl Fn(I) -> R
 where
@@ -8,20 +8,20 @@ where
     R: Clone,
     F: Fn(I) -> R,
 {
-    // Use RefCell to allow interior mutability of cache inside the closure.
-    let cache = RefCell::new(HashMap::<I, R>::new());
+    let cache = Arc::new(RwLock::new(HashMap::<I, R>::new()));
 
     move |input: I| {
-        // Borrow the cache and check if the input is already present.
-        let mut cache = cache.borrow_mut();
-        match cache.get(&input) {
-            Some(value) => value.clone(),
-            None => {
-                let result = func(input.clone());
-                cache.insert(input, result.clone());
-                result
+        {
+            // Check if value exists in cache with a read lock.
+            let cache_read = cache.read().unwrap();
+            if let Some(value) = cache_read.get(&input) {
+                return value.clone();
             }
         }
+        let mut cache = cache.write().unwrap();
+        let result = func(input.clone());
+        cache.insert(input, result.clone());
+        result
     }
 }
 
