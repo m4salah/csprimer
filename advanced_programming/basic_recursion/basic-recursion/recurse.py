@@ -82,7 +82,7 @@ def filter_recursive(f, xs):
     Given a predicate function f (a function which returns True or False) and a list
     xs, return a new list with only the items of xs where f(x) is True.
 
-    Below is an iterative approach. See if you can convert it to recursive, for practice.
+    Below is an iterative approach. See if you can convert it to recursive, for Practice.
 
     def filter_iter(f, xs):
         out = []
@@ -159,7 +159,11 @@ def rabbit_pairs(n):
     >>> rabbit_pairs(20)
     6765
     """
-    pass
+    if n == 1:
+        return 1
+    if n == 2:
+        return 1
+    return rabbit_pairs(n - 1) + rabbit_pairs(n - 2)
 
 
 if __name__ == "__main__":
