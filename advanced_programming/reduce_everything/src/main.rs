@@ -6,7 +6,7 @@ fn my_reduce<T: Copy, R>(init: R, mut f: impl FnMut(R, T) -> R, xs: Vec<T>) -> R
     return res;
 }
 
-fn my_map<T: Copy, R>(mut f: impl FnMut(T) -> R, xs: Vec<T>) -> Vec<R> {
+fn my_map<T: Copy, R>(f: fn(T) -> R, xs: Vec<T>) -> Vec<R> {
     return my_reduce(
         Vec::new(),
         |mut acc, x| {
@@ -17,7 +17,7 @@ fn my_map<T: Copy, R>(mut f: impl FnMut(T) -> R, xs: Vec<T>) -> Vec<R> {
     );
 }
 
-fn my_filter<T: Copy>(mut f: impl FnMut(T) -> bool, xs: Vec<T>) -> Vec<T> {
+fn my_filter<T: Copy>(f: fn(T) -> bool, xs: Vec<T>) -> Vec<T> {
     return my_reduce(
         Vec::new(),
         |mut acc, x| {
