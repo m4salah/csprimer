@@ -67,9 +67,9 @@ pub fn gcd(a: u64, b: u64) -> u64 {
 ///
 /// ```
 /// use basic_recursion::filter_rec;
-/// assert!(filter_rec(vec![-1, 3, -2, 5], &|x| x > 0) == vec![3, 5]);
+/// assert!(filter_rec(vec![-1, 3, -2, 5], |x| x > 0) == vec![3, 5]);
 /// ```
-pub fn filter_rec<T: Clone>(xs: Vec<T>, f: &impl Fn(T) -> bool) -> Vec<T> {
+pub fn filter_rec<T: Clone>(xs: Vec<T>, f: fn(T) -> bool) -> Vec<T> {
     if xs.is_empty() {
         return vec![];
     }
@@ -94,9 +94,9 @@ pub fn filter_rec<T: Clone>(xs: Vec<T>, f: &impl Fn(T) -> bool) -> Vec<T> {
 ///
 /// ```
 /// use basic_recursion::reduce;
-/// assert!(reduce(vec![1, 2, 3, 4], 0, &|acc, x| acc + x) == 10);
+/// assert!(reduce(vec![1, 2, 3, 4], 0, |acc, x| acc + x) == 10);
 /// ```
-pub fn reduce<T: Clone, I: Clone>(xs: Vec<T>, init: I, f: &impl Fn(I, T) -> I) -> I {
+pub fn reduce<T: Clone, I: Clone>(xs: Vec<T>, init: I, f: fn(I, T) -> I) -> I {
     if xs.is_empty() {
         return init;
     }
