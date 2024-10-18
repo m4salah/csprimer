@@ -23,24 +23,24 @@ enum Pretty<T: Display> {
 
 impl<T: Display> Pretty<T> {
     pub fn pprint(&self, indent: &str) -> String {
-        let mut result = vec![];
+        let mut result = String::new();
         match self {
             Pretty::Atomic(e) => {
-                result.push(format!("{e}"));
+                result.push_str(&format!("{e}"));
             }
             Pretty::List(vec) => {
-                result.push("[".to_string());
+                result.push_str("[");
                 for (i, v) in vec.iter().enumerate() {
                     // if it's the last element, don't add a comma and newline
-                    result.push(v.pprint(&format!(" {indent}")));
+                    result.push_str(&v.pprint(&format!(" {indent}")));
                     if i < vec.len() - 1 {
-                        result.push(format!(",\n{indent}"));
+                        result.push_str(&format!(",\n{indent}"));
                     }
                 }
-                result.push("]".to_string());
+                result.push_str("]");
             }
         };
-        return format!("{}", result.join(""));
+        return result;
     }
 }
 
