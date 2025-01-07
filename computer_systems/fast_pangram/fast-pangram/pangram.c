@@ -30,8 +30,9 @@ int main() {
     }
   }
 
-  if (ferror(stdin))
+  if (ferror(stdin)) {
     fprintf(stderr, "Error reading from stdin");
+  }
 
   free(line);
   fprintf(stderr, "ok\n");
