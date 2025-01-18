@@ -116,14 +116,15 @@ typedef struct HM {
   size_t bucket_size;
 } Hashmap;
 
-Hash djb2(char *s, size_t size) {
+Hash djb2(const char *s, size_t size) {
   size_t h = 5381;
   size_t n = strlen(s);
   for (int i = 0; i < n; i++) {
-    h = (h << 5) + h + s[i];
+    h += (h << 5) + s[i];
   }
   return h % size;
 }
+
 Hashmap *Hashmap_new() {
   Hashmap *h = malloc(sizeof(Hashmap *));
   if (!h) {
@@ -136,7 +137,7 @@ Hashmap *Hashmap_new() {
 
 void Hashmap_set(Hashmap *h, char *key, void *value) {
   char *copy_key = strdup(key);
-  size_t hash_key = djb2(copy_key, h->bucket_size);
+  Hash hash_key = djb2(copy_key, h->bucket_size);
   UniqueLinkedList *slot = h->arr[hash_key];
   // if there is already linked list in the slot;
   if (slot) {
