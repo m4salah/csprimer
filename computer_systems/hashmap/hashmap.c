@@ -202,7 +202,6 @@ int main() {
   // basic delete functionality
   Hashmap_delete(h, "item a");
   assert(Hashmap_get(h, "item a") == NULL);
-  Hashmap_print(h);
   // handle collisions correctly
   // note: this doesn't necessarily test expansion
   int i, n = STARTING_BUCKETS * 10, ns[n];
@@ -211,9 +210,7 @@ int main() {
     ns[i] = i;
     sprintf(key, "item %d", i);
     Hashmap_set(h, key, &ns[i]);
-    Hashmap_print(h);
   }
-  Hashmap_print(h);
   for (i = 0; i < n; i++) {
     sprintf(key, "item %d", i);
     assert(Hashmap_get(h, key) == &ns[i]);
