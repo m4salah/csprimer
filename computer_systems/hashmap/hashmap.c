@@ -65,8 +65,7 @@ void LinkedList_delete(UniqueLinkedList *ll, char *key) {
       } else {
         prev_target->next = target->next;
       }
-      free(target->key);
-      free(target);
+      Node_free(target);
       return;
     }
     prev_target = target;
