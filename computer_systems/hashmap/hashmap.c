@@ -112,15 +112,14 @@ typedef struct HM {
   UniqueLinkedList **arr;
 } Hashmap;
 
-size_t hash(char *s) {
-  size_t sum = 0;
+size_t djb2(char *s) {
+  size_t h = 5381;
   size_t n = strlen(s);
   for (int i = 0; i < n; i++) {
-    sum += s[i];
+    h += s[i];
   }
-  return sum % STARTING_BUCKETS;
+  return h % STARTING_BUCKETS;
 }
-void Hashmap_print(Hashmap *);
 Hashmap *Hashmap_new() {
   Hashmap *h = malloc(sizeof(Hashmap *));
   if (!h) {
@@ -131,10 +130,8 @@ Hashmap *Hashmap_new() {
 }
 
 void Hashmap_set(Hashmap *h, char *key, void *value) {
-  char *copy_key;
-  copy_key = malloc(strlen(key));
-  strcpy(copy_key, key);
-  size_t hash_key = hash(copy_key);
+  char *copy_key = strdup(key);
+  size_t hash_key = djb2(copy_key);
   UniqueLinkedList *slot = h->arr[hash_key];
   // if there is already linked list in the slot;
   if (slot) {
@@ -148,7 +145,7 @@ void Hashmap_set(Hashmap *h, char *key, void *value) {
 }
 
 void *Hashmap_get(Hashmap *h, char *key) {
-  UniqueLinkedList *slot = h->arr[hash(key)];
+  UniqueLinkedList *slot = h->arr[djb2(key)];
   if (slot) {
     Node *node = LinkedList_get(slot, key);
     if (node) {
@@ -159,7 +156,7 @@ void *Hashmap_get(Hashmap *h, char *key) {
 }
 
 void Hashmap_delete(Hashmap *h, char *key) {
-  UniqueLinkedList *slot = h->arr[hash(key)];
+  UniqueLinkedList *slot = h->arr[djb2(key)];
   if (slot) {
     LinkedList_delete(slot, key);
   }
