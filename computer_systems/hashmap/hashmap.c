@@ -1,11 +1,14 @@
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define STARTING_BUCKETS 8
 #define MAX_KEY_SIZE 32
+
+typedef uint32_t Hash;
 
 typedef struct N {
   char *key;
@@ -110,28 +113,30 @@ void LinkedList_free(UniqueLinkedList *ll) {
 
 typedef struct HM {
   UniqueLinkedList **arr;
+  size_t bucket_size;
 } Hashmap;
 
-size_t djb2(char *s) {
+Hash djb2(char *s, size_t size) {
   size_t h = 5381;
   size_t n = strlen(s);
   for (int i = 0; i < n; i++) {
-    h += s[i];
+    h = (h << 5) + h + s[i];
   }
-  return h % STARTING_BUCKETS;
+  return h % size;
 }
 Hashmap *Hashmap_new() {
   Hashmap *h = malloc(sizeof(Hashmap *));
   if (!h) {
     return NULL;
   }
+  h->bucket_size = STARTING_BUCKETS;
   h->arr = calloc(STARTING_BUCKETS, sizeof(UniqueLinkedList *));
   return h;
 }
 
 void Hashmap_set(Hashmap *h, char *key, void *value) {
   char *copy_key = strdup(key);
-  size_t hash_key = djb2(copy_key);
+  size_t hash_key = djb2(copy_key, h->bucket_size);
   UniqueLinkedList *slot = h->arr[hash_key];
   // if there is already linked list in the slot;
   if (slot) {
@@ -145,7 +150,7 @@ void Hashmap_set(Hashmap *h, char *key, void *value) {
 }
 
 void *Hashmap_get(Hashmap *h, char *key) {
-  UniqueLinkedList *slot = h->arr[djb2(key)];
+  UniqueLinkedList *slot = h->arr[djb2(key, h->bucket_size)];
   if (slot) {
     Node *node = LinkedList_get(slot, key);
     if (node) {
@@ -156,7 +161,7 @@ void *Hashmap_get(Hashmap *h, char *key) {
 }
 
 void Hashmap_delete(Hashmap *h, char *key) {
-  UniqueLinkedList *slot = h->arr[djb2(key)];
+  UniqueLinkedList *slot = h->arr[djb2(key, h->bucket_size)];
   if (slot) {
     LinkedList_delete(slot, key);
   }
