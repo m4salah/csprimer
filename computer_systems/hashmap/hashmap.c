@@ -65,6 +65,7 @@ void LinkedList_delete(UniqueLinkedList *ll, char *key) {
       } else {
         prev_target->next = target->next;
       }
+      free(target->key);
       free(target);
       return;
     }
@@ -125,7 +126,7 @@ Hashmap *Hashmap_new() {
   if (!h) {
     return NULL;
   }
-  h->arr = malloc(STARTING_BUCKETS * sizeof(UniqueLinkedList *));
+  h->arr = calloc(STARTING_BUCKETS, sizeof(UniqueLinkedList *));
   return h;
 }
 
