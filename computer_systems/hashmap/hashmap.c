@@ -17,7 +17,7 @@ typedef struct N {
 } Node;
 
 Node *Node_new(char *key, void *value) {
-  Node *n = malloc(sizeof(Node *));
+  Node *n = malloc(sizeof(Node));
   n->key = key;
   n->value = value;
   return n;
@@ -45,12 +45,13 @@ Node *LinkedList_get(UniqueLinkedList *, char *);
 
 void LinkedList_push(UniqueLinkedList *ll, char *key, void *value) {
   Node *n = LinkedList_get(ll, key);
+  char *copy_key = strdup(key);
   if (n) {
     Node_set_value(n, value);
-    free(key);
+    free(copy_key);
     return;
   }
-  n = Node_new(key, value);
+  n = Node_new(copy_key, value);
   n->next = ll->head;
   ll->head = n;
 }
@@ -102,6 +103,9 @@ void LinkedList_print(UniqueLinkedList *list) {
 }
 
 void LinkedList_free(UniqueLinkedList *ll) {
+  if (!ll) {
+    return;
+  }
   Node *tmp;
   while (ll->head) {
     tmp = ll->head;
@@ -126,28 +130,27 @@ Hash djb2(const char *s, size_t size) {
 }
 
 Hashmap *Hashmap_new() {
-  Hashmap *h = malloc(sizeof(Hashmap *));
+  Hashmap *h = malloc(sizeof(Hashmap));
   if (!h) {
     return NULL;
   }
   h->bucket_size = STARTING_BUCKETS;
-  h->arr = calloc(STARTING_BUCKETS, sizeof(UniqueLinkedList *));
+  h->arr = calloc(STARTING_BUCKETS, sizeof(UniqueLinkedList));
   return h;
 }
 
 void Hashmap_set(Hashmap *h, char *key, void *value) {
-  char *copy_key = strdup(key);
-  Hash hash_key = djb2(copy_key, h->bucket_size);
+  Hash hash_key = djb2(key, h->bucket_size);
   UniqueLinkedList *slot = h->arr[hash_key];
   // if there is already linked list in the slot;
   if (slot) {
     // Check if the key already exists.
-    LinkedList_push(slot, copy_key, value);
+    LinkedList_push(slot, key, value);
     return;
   }
 
   h->arr[hash_key] = LinkedList_new();
-  LinkedList_push(h->arr[hash_key], copy_key, value);
+  LinkedList_push(h->arr[hash_key], key, value);
 }
 
 void *Hashmap_get(Hashmap *h, char *key) {
