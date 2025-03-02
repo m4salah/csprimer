@@ -3,13 +3,23 @@ global sum_to_n
 section .text
 
 sum_to_n:
-	; zero the return value
-	; rax is the return value in unix x86 calling convention
-	xor rax, rax
-; lable the loop
-_sum_loop:
-	; rdi is the first argument in unix x86 calling convention 
-	add rax, rdi ; add n to rax (the return value)
-	sub rdi, 1   ; subtract 1 from n (rdi)
-	jg _sum_loop ; if the sub is 0 so this will never execute else it jumb back to the loop while is greater than 0
+	; store 2 for the future use
+	mov rbx, 2
+	; move n (rdi) to rax (the return value)
+	mov rax, rdi
+	; add 1 to the n (rdi) to be n + 1
+	add rdi, 1
+	; multiply eax to rdi => n * (n + 1) => rdi * rax
+	; mul is taking one op https://www.felixcloutier.com/x86/mul
+	; the op is getting muliplied to rax 
+	; and the result get stored to RDX:RAX
+	; this means that RDX stored the upper ordered 64 bits
+	; and the RAX stores the lower ordered 64 bits
+	mul rdi
+	; we divide the result to 2 => n * (n + 1) / 2 => rdi * rax / 2
+	; div is taking also 1 op, and the RDX:RAX is getting divided to this op
+	; and the result get stored to the 
+	; quotient -> RAX
+	; reminder -> RDX
+	div rbx
 	ret
