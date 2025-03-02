@@ -21,5 +21,5 @@ sum_to_n:
 	; and the result get stored to the 
 	; quotient -> RAX
 	; reminder -> RDX
-	div rbx
+	shr rax, 1
 	ret
