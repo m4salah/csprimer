@@ -11,5 +11,5 @@ _sum_loop:
 	; rdi is the first argument in unix x86 calling convention 
 	add rax, rdi ; add n to rax (the return value)
 	sub rdi, 1   ; subtract 1 from n (rdi)
-	jg _sum_loop ; loop again until we make rdi 0
+	jg _sum_loop ; if the sub is 0 so this will never execute else it jumb back to the loop while is greater than 0
 	ret
