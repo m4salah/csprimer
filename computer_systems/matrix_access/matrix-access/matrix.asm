@@ -6,8 +6,10 @@ index:
 	; edx: cols
 	; ecx: rindex
 	; r8d: cindex
-	imul rsi, r8
-	add rsi, rcx
-	imul rsi, 4
-	mov rax, [rdi + rsi]
+	mov rax, rsi
+	mul r8
+	add rax, rcx
+	imul rax, 4
+	add rax, rdi
+	mov rax, [rax]
 	ret
