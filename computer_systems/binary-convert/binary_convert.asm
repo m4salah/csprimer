@@ -9,6 +9,9 @@ loop:
 	je end
 	inc rdi
 	shl eax, 1   ; multiply the eax by 2
+	sub ebx, '0' ; '0' -> 0, '1' -> 1
+	cmp ebx, 1
+	jg end
 	add eax, ebx
 	jmp loop
 end:
