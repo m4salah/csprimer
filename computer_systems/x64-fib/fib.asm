@@ -16,8 +16,8 @@ fib:
 	push rax   ; save fib(rdi - 1)
 	sub rdi, 2 ; rdi - 2
 	call fib   ; calculate fib(rdi - 2)
-	pop rbx    ; retrieve fib(rdi - 1) -> rbx
-	add rax, rbx ; rax now hase fib(rdi - 2), add to it fib(rdi - 1)
+	pop rcx    ; retrieve fib(rdi - 1) -> rcx
+	add rax, rcx ; rax now hase fib(rdi - 2), add to it fib(rdi - 1)
 	ret
 
 fib_0:
