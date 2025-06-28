@@ -24,8 +24,5 @@ exit_loop:
 	xor eax, eax  ; clear eax
 	and ecx, mask ; bs & MASK
 	cmp ecx, mask ; (bs & MASK) == MASK
-	je true
-	ret
-true:
-	mov eax, 1
+	sete al
 	ret
