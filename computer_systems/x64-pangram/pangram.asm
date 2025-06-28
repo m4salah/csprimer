@@ -1,10 +1,6 @@
 %define mask 0x07fffffe
 
-section .data
-msg: db "", 0 ; 10 is for newline
-
 section .text
-
 global pangram
 pangram:
 	; rdi: source string
