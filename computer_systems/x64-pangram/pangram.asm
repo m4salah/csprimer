@@ -8,23 +8,23 @@ section .text
 global pangram
 pangram:
 	; rdi: source string
-	xor ecx, ecx ; the bit set of the result
+	xor ecx, ecx ; uint32_t bs = 0;
 	start_loop:
-	movzx edx, byte [rdi]
-	cmp edx, 0
+	movzx edx, byte [rdi] ; c = *s
+	cmp edx, 0 ; check for null terminator (c = *s) != '\0'
 	je exit_loop
-	inc rdi
-	cmp edx, '@'
-	jl start_loop
-	and edx, 0x1f
-	bts ecx, edx
+	inc rdi ; s++
+	cmp edx, '@' ; check if c < '@'
+	jl start_loop ; continue
+	and edx, 0x1f ; c & 0x1f
+	bts ecx, edx  ; bs |= 1 << (c & 0x1f)
 	jmp start_loop
 
 exit_loop:
-	and ecx, mask
-	cmp ecx, mask
-	jz true
-	mov eax, 0
+	xor eax, eax  ; clear eax
+	and ecx, mask ; bs & MASK
+	cmp ecx, mask ; (bs & MASK) == MASK
+	je true
 	ret
 true:
 	mov eax, 1
