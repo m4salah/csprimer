@@ -8,8 +8,8 @@
 void grayscale(unsigned char *pixels, int32_t width, int32_t height) {
   int x, y, offset;
   unsigned char lum;
-  for (x = 0; x < width; x++) {
-    for (y = 0; y < height; y++) {
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++) {
       offset = 3 * (y * width + x);
       lum = 0.0722 * (double)pixels[offset] +
             0.7152 * (double)pixels[offset + 1] +
